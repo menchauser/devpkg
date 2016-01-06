@@ -3,10 +3,6 @@ extern crate getopts;
 use getopts::Options;
 use std::env;
 
-fn print_usage(program: &String, opts: Options) {
-    let brief = format!("Usage: {} [options]", program);
-    print!("{}", opts.usage(&brief));
-}
 
 #[derive(Debug)]
 enum Command {
@@ -30,6 +26,11 @@ enum Command {
     },
 }
 
+fn print_usage(program: &String, opts: Options) {
+    let brief = format!("Usage: {} [options]", program);
+    print!("{}", opts.usage(&brief));
+}
+
 // TODO: how to live w/o lifetime specifier?
 fn init_options() -> Options {
     let mut opts = Options::new();
@@ -44,6 +45,20 @@ fn init_options() -> Options {
     opts.optflag("h", "help", "print this help menu");
 
     opts
+}
+
+fn execute_command(command: Command) {
+    println!("Executing command {:?}", command);
+    match command {
+        Command::None => println!("Unknown command"),
+        Command::Init => println!("Initializing database"),
+        Command::List => println!("Listing package source database"),
+        Command::Install { url, configure_opts, make_opts, install_target } => {
+            println!("Installing package from {}.", url)
+        }
+        Command::Fetch { url } => println!("Fetching package from {}.", url),
+        Command::Build { url, .. } => println!("Building package from url {}.", url),
+    }
 }
 
 fn main() {
@@ -90,7 +105,7 @@ fn main() {
         Command::None
     };
 
-    println!("Executing command: {:?}", command);
+    execute_command(command);
 
     println!("Bye-bye");
 }
