@@ -1,4 +1,7 @@
 extern crate getopts;
+#[macro_use]
+extern crate log;
+extern crate env_logger;
 
 use getopts::Options;
 use std::env;
@@ -40,17 +43,20 @@ impl Database {
     }
 
     fn init(&self) {
+        debug!("Creating new database file");
         // TODO: check R and X permissions
         let db_file_path = Path::new(&self.path);
         let db_dir_path = db_file_path.parent().unwrap();
 
         if !db_dir_path.exists() {
+            debug!("Directory {} does not exist. Creating new", &db_dir_path);
             // try!(fs::create_dir_all(db_dir_path));
             fs::create_dir_all(db_dir_path);
         }
 
         // TODO: check W permission
         if !db_file_path.exists() {
+            debug!("File {} does not exist. Creating new", &db_file_path);
             // try!(fs::File::create(DB_FILE));
             fs::File::create(DB_FILE);
         }
@@ -97,6 +103,8 @@ fn execute_command(command: Command) {
 }
 
 fn main() {
+    env_logger::init().unwrap();
+
     let args: Vec<String> = env::args().collect();
 
     let program = args[0].clone();

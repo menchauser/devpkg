@@ -5,3 +5,5 @@ authors = ["Mukhamed Karanashev <menchauser@gmail.com>"]
 
 [dependencies]
 getopts = "0.2.14"
+log = "0.3.4"
+env_logger = "0.3.2"
