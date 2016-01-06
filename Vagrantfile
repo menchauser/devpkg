@@ -68,6 +68,6 @@ Vagrant.configure(2) do |config|
     curl -sSfO https://static.rust-lang.org/rustup.sh
     sh rustup.sh --yes
     rm -f rustup.h
-    sudo yum install -y git 
+    sudo yum install -y git gcc
   SHELL
 end
