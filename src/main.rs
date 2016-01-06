@@ -8,10 +8,11 @@ fn print_usage(program: &String, opts: Options) {
     print!("{}", opts.usage(&brief));
 }
 
+#[derive(Debug)]
 enum Command {
     None,
-    List,
     Init,
+    List,
     Install {
         url: String,
         configure_opts: Option<String>,
@@ -29,11 +30,8 @@ enum Command {
     },
 }
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
-
-    let program = args[0].clone();
-
+// TODO: how to live w/o lifetime specifier?
+fn init_options() -> Options {
     let mut opts = Options::new();
     opts.optflag("S", "setup", "set up repository for package installation");
     opts.optflag("L", "list", "list installed packages");
@@ -45,6 +43,16 @@ fn main() {
     opts.optopt("i", "", "install target", "TARGET");
     opts.optflag("h", "help", "print this help menu");
 
+    opts
+}
+
+fn main() {
+    let args: Vec<String> = env::args().collect();
+
+    let program = args[0].clone();
+
+    let opts = init_options();
+
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
         Err(f) => panic!(f.to_string()),
@@ -54,6 +62,35 @@ fn main() {
         print_usage(&program, opts);
         return;
     }
+
+    let command = if matches.opt_present("S") {
+        Command::Init
+    } else if matches.opt_present("L") {
+        Command::List
+    } else if matches.opt_present("I") {
+        let url = matches.opt_str("I").expect("You must at least give a URL.");
+        Command::Install {
+            url: url,
+            configure_opts: matches.opt_str("c"),
+            make_opts: matches.opt_str("m"),
+            install_target: matches.opt_str("i"),
+        }
+    } else if matches.opt_present("F") {
+        let url = matches.opt_str("F").expect("You must at least give a URL.");
+        Command::Fetch { url: url }
+    } else if matches.opt_present("B") {
+        let url = matches.opt_str("F").expect("You must at least give a URL.");
+        Command::Build {
+            url: url,
+            configure_opts: matches.opt_str("c"),
+            make_opts: matches.opt_str("m"),
+            install_target: matches.opt_str("i"),
+        }
+    } else {
+        Command::None
+    };
+
+    println!("Executing command: {:?}", command);
 
     println!("Bye-bye");
 }
