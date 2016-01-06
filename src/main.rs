@@ -2,6 +2,8 @@ extern crate getopts;
 
 use getopts::Options;
 use std::env;
+use std::fs;
+use std::path::Path;
 
 
 #[derive(Debug)]
@@ -26,12 +28,42 @@ enum Command {
     },
 }
 
+const DB_FILE: &'static str = "/usr/local/.devpkg/db";
+
+struct Database {
+    path: String,
+}
+
+impl Database {
+    fn new() -> Database {
+        Database { path: String::from(DB_FILE) }
+    }
+
+    fn init(&self) {
+        // TODO: check R and X permissions
+        let db_file_path = Path::new(&self.path);
+        let db_dir_path = db_file_path.parent().unwrap();
+
+        if !db_dir_path.exists() {
+            // try!(fs::create_dir_all(db_dir_path));
+            fs::create_dir_all(db_dir_path);
+        }
+
+        // TODO: check W permission
+        if !db_file_path.exists() {
+            // try!(fs::File::create(DB_FILE));
+            fs::File::create(DB_FILE);
+        }
+    }
+}
+
+
 fn print_usage(program: &String, opts: Options) {
     let brief = format!("Usage: {} [options]", program);
     print!("{}", opts.usage(&brief));
 }
 
-// TODO: how to live w/o lifetime specifier?
+// TODO: how to pass reference to Options outside, that outlive function?
 fn init_options() -> Options {
     let mut opts = Options::new();
     opts.optflag("S", "setup", "set up repository for package installation");
@@ -51,7 +83,10 @@ fn execute_command(command: Command) {
     println!("Executing command {:?}", command);
     match command {
         Command::None => println!("Unknown command"),
-        Command::Init => println!("Initializing database"),
+        Command::Init => {
+            println!("Initializing database");
+            Database::new().init();
+        }
         Command::List => println!("Listing package source database"),
         Command::Install { url, configure_opts, make_opts, install_target } => {
             println!("Installing package from {}.", url)
