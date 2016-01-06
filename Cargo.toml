@@ -1,0 +1,7 @@
+[package]
+name = "devpkg"
+version = "0.1.0"
+authors = ["Mukhamed Karanashev <menchauser@gmail.com>"]
+
+[dependencies]
+getopts = "0.2.14"
