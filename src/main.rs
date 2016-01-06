@@ -8,6 +8,27 @@ fn print_usage(program: &String, opts: Options) {
     print!("{}", opts.usage(&brief));
 }
 
+enum Command {
+    None,
+    List,
+    Init,
+    Install {
+        url: String,
+        configure_opts: Option<String>,
+        make_opts: Option<String>,
+        install_target: Option<String>,
+    },
+    Fetch {
+        url: String,
+    },
+    Build {
+        url: String,
+        configure_opts: Option<String>,
+        make_opts: Option<String>,
+        install_target: Option<String>,
+    },
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
@@ -25,8 +46,8 @@ fn main() {
     opts.optflag("h", "help", "print this help menu");
 
     let matches = match opts.parse(&args[1..]) {
-        Ok(m) => { m },
-        Err(f) => { panic!(f.to_string()) }
+        Ok(m) => m,
+        Err(f) => panic!(f.to_string()),
     };
 
     if matches.opt_present("h") {
