@@ -86,13 +86,13 @@ fn init_options() -> Options {
     opts
 }
 
-fn execute_command(command: Command) {
+fn execute_command(command: Command) -> Result<(), Box<std::error::Error>> {
     println!("Executing command {:?}", command);
     match command {
         Command::None => println!("Unknown command"),
         Command::Init => {
             println!("Initializing database");
-            Database::new().init();
+            try!(Database::new().init());
         }
         Command::List => println!("Listing package source database"),
         Command::Install { url, configure_opts, make_opts, install_target } => {
@@ -101,6 +101,7 @@ fn execute_command(command: Command) {
         Command::Fetch { url } => println!("Fetching package from {}.", url),
         Command::Build { url, .. } => println!("Building package from url {}.", url),
     }
+    Ok(())
 }
 
 fn main() {
@@ -149,7 +150,10 @@ fn main() {
         Command::None
     };
 
-    execute_command(command);
+    match execute_command(command) {
+        Ok(_) => debug!("Command successfully executed"),
+        Err(e) => debug!("Error: {:?}", e),
+    }
 
     println!("Bye-bye");
 }
