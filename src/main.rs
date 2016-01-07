@@ -7,6 +7,7 @@ use getopts::Options;
 use std::env;
 use std::fs;
 use std::path::Path;
+use std::io;
 
 
 #[derive(Debug)]
@@ -42,7 +43,7 @@ impl Database {
         Database { path: String::from(DB_FILE) }
     }
 
-    fn init(&self) {
+    fn init(&self) -> Result<(), io::Error> {
         debug!("Creating new database file");
         // TODO: check R and X permissions
         let db_file_path = Path::new(&self.path);
@@ -50,16 +51,16 @@ impl Database {
 
         if !db_dir_path.exists() {
             debug!("Directory {:?} does not exist. Creating new", &db_dir_path);
-            // try!(fs::create_dir_all(db_dir_path));
-            fs::create_dir_all(db_dir_path);
+            try!(fs::create_dir_all(db_dir_path));
         }
 
         // TODO: check W permission
         if !db_file_path.exists() {
             debug!("File {:?} does not exist. Creating new", &db_file_path);
-            // try!(fs::File::create(DB_FILE));
-            fs::File::create(DB_FILE);
+            try!(fs::File::create(DB_FILE));
         }
+
+        Ok(())
     }
 }
 
