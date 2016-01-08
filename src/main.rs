@@ -8,7 +8,7 @@ use std::env;
 use std::fs;
 use std::path::Path;
 use std::io;
-
+use std::io::Read;
 
 #[derive(Debug)]
 enum Command {
@@ -43,7 +43,7 @@ impl Database {
         Database { path: String::from(DB_FILE) }
     }
 
-    fn init(&self) -> Result<(), io::Error> {
+    fn init(&self) -> io::Result<()> {
         debug!("Creating new database file");
         // TODO: check R and X permissions
         let db_file_path = Path::new(&self.path);
@@ -59,6 +59,28 @@ impl Database {
             debug!("File {:?} does not exist. Creating new", &db_file_path);
             try!(fs::File::create(DB_FILE));
         }
+
+        Ok(())
+    }
+
+    fn load(&self) -> io::Result<String> {
+        debug!("Loading data from package database");
+        let mut f = try!(fs::File::open(&self.path));
+        let mut data = String::new();
+        try!(f.read_to_string(&mut data));
+
+        Ok(data)
+    }
+
+    fn find(&self, url: &str) -> io::Result<bool> {
+        let data = try!(self.load());
+        match self.load() {
+            Ok(s) => return Ok(s.contains(url)),
+            Err(e) => return Err(e),
+        }
+    }
+
+    fn update(&self, url: &str) -> io::Result<()> {
 
         Ok(())
     }
