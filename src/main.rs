@@ -1,14 +1,15 @@
-extern crate getopts;
 #[macro_use]
 extern crate log;
 extern crate env_logger;
+extern crate getopts;
 
 use getopts::Options;
 use std::env;
-use std::fs;
-use std::path::Path;
 use std::io;
-use std::io::Read;
+use std::fs;
+use std::fs::File;
+use std::path::Path;
+use std::io::{Read, Write};
 
 #[derive(Debug)]
 enum Command {
@@ -43,6 +44,10 @@ impl Database {
         Database { path: String::from(DB_FILE) }
     }
 
+    fn open(&self) -> io::Result<File> {
+        File::open(&self.path)
+    }
+
     fn init(&self) -> io::Result<()> {
         debug!("Creating new database file");
         // TODO: check R and X permissions
@@ -57,7 +62,7 @@ impl Database {
         // TODO: check W permission
         if !db_file_path.exists() {
             debug!("File {:?} does not exist. Creating new", &db_file_path);
-            try!(fs::File::create(DB_FILE));
+            try!(File::create(DB_FILE));
         }
 
         Ok(())
@@ -65,7 +70,7 @@ impl Database {
 
     fn load(&self) -> io::Result<String> {
         debug!("Loading data from package database");
-        let mut f = try!(fs::File::open(&self.path));
+        let mut f = try!(self.open());
         let mut data = String::new();
         try!(f.read_to_string(&mut data));
 
@@ -81,6 +86,12 @@ impl Database {
     }
 
     fn update(&self, url: &str) -> io::Result<()> {
+        if self.find(url).unwrap_or(false) {
+            info!("Already recorded as installed: {}", url);
+        }
+
+        let mut db = try!(self.open());
+        try!(db.write_all(url.as_bytes()));
 
         Ok(())
     }
