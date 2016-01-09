@@ -95,6 +95,12 @@ impl Database {
 
         Ok(())
     }
+
+    fn list<W: Write>(&self, w: &mut W) -> io::Result<()> {
+        let data = try!(self.load());
+        try!(w.write_all(data.as_bytes()));
+        Ok(())
+    }
 }
 
 
@@ -124,10 +130,13 @@ fn execute_command(command: Command) -> Result<(), Box<std::error::Error>> {
     match command {
         Command::None => println!("Unknown command"),
         Command::Init => {
-            println!("Initializing database");
+            info!("Initializing database");
             try!(Database::new().init());
         }
-        Command::List => println!("Listing package source database"),
+        Command::List => {
+            info!("Listing package source database");
+            try!(Database::new().list(&mut io::stdout()));
+        }
         Command::Install { url, configure_opts, make_opts, install_target } => {
             println!("Installing package from {}.", url)
         }
